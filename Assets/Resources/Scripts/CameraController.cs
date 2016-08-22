@@ -8,14 +8,6 @@ public class CameraController : MonoBehaviour {
 	private static float x, y;
 	private static float height;
 
-	private static Vector2 anchor;
-
-	//This is the equivalent of a null value for Vector2s
-	private static readonly Vector2 NO_POINT = new Vector2(0, 0);
-
-	private static readonly float PANNING_SCALE = 0.1f;
-	private static readonly float SCROLLING_SCALE = 3f;
-
 	//Note that the camera is in negative z by default
 	private static readonly float MIN_HEIGHT = -2f;
 
@@ -27,43 +19,41 @@ public class CameraController : MonoBehaviour {
 		y = mainCamera.transform.position.y;
 
 		height = mainCamera.transform.position.z;
-
-		anchor = NO_POINT;
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		//WASD to pan around
-		float xMovement = -height * PANNING_SCALE * Input.GetAxis("Horizontal");
-		float yMovement = -height * PANNING_SCALE * Input.GetAxis ("Vertical");
+		doMove ();
+	}
 
-		x += xMovement;
-		y += yMovement;
+	public static void addX(float amt) {
+		x += amt;
+	}
 
-		//LMB also can pan around
-		if (Input.GetMouseButton (0)) {
-			//We need to calculate the distance from the camera to get world coords
-			Vector3 clickedPoint = Input.mousePosition;
-			clickedPoint.z = -height;
-			clickedPoint = mainCamera.ScreenToWorldPoint (clickedPoint);
+	public static void addY(float amt) {
+		y += amt;
+	}
 
-			//Set initial point, if needed
-			if (anchor == NO_POINT)
-				anchor = clickedPoint;
-			//Move the delta between the init and current point
-			else {
-				x += anchor.x - clickedPoint.x;
-				y += anchor.y - clickedPoint.y;
-			}
-		} else
-			anchor = NO_POINT; //clear anchor
-
-		//Handle scrolling
-		height += Input.GetAxis ("Mouse ScrollWheel");
+	public static void addHeight(float amt) {
+		height += amt;
 		if (height >= MIN_HEIGHT)
 			height = MIN_HEIGHT;
+	}
 
-		doMove ();
+	public static float getX() {
+		return x;
+	}
+
+	public static float getY() {
+		return y;
+	}
+
+	public static float getHeight() {
+		return height;
+	}
+
+	public static Camera getCamera() {
+		return mainCamera;
 	}
 
 	private void doMove() {
