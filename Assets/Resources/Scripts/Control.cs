@@ -11,6 +11,9 @@ public class Control : MonoBehaviour {
 	private static readonly float PANNING_SCALE = 0.1f;
 	private static readonly float SCROLLING_SCALE = 1.2f;
 
+	//What will we create when we left click?
+	public static int creationType;
+
 	private static ArrayList ghost;
 	private static int lastXSize, lastYSize;
 
@@ -18,9 +21,11 @@ public class Control : MonoBehaviour {
 	void Start () {
 		anchor = NO_POINT;
 
+		creationType = 0;
+
+		ghost = new ArrayList ();
 		lastXSize = -1;
 		lastYSize = -1;
-		ghost = new ArrayList ();
 	}
 	
 	// Update is called once per frame
@@ -61,33 +66,38 @@ public class Control : MonoBehaviour {
 			clickedPoint.y = Mathf.Round (clickedPoint.y);
 
 			//Set initial point, if needed. Round to nearest integer.
-			if (anchor == NO_POINT) {
-				Debug.Log ("Setting anchor");
+			if (anchor == NO_POINT) 
 				anchor = clickedPoint;
-			} else {
+			else {
 				int xSize = (int)Mathf.Abs (anchor.x - clickedPoint.x);
 				int ySize = (int)Mathf.Abs (anchor.y - clickedPoint.y);
 
 				Debug.Log (xSize + "x" + ySize);
 
-				if (xSize == lastXSize && ySize == lastYSize) {
+				//If the size is unchanged, skip
+				if (xSize == lastXSize && ySize == lastYSize) {}
 					//goto EXIT_LMB;
-				}
 
 				if (lastXSize == -1)
 					lastXSize = xSize;
 				if (lastYSize == -1)
 					lastYSize = ySize;
-				
-				if (xSize >= 2 && ySize >= 2) {
-					Debug.Log ("Creating a room!");
 
-					//clear
-					foreach (GameObject g in ghost)
-						Game.destroy (g);
-					ghost.Clear ();
+				switch (creationType) {
+				case 0:
+					if (xSize >= 2 && ySize >= 2) {
+						//Clearing code
+						foreach (GameObject g in ghost)
+							Game.destroy (g);
+						ghost.Clear ();
 
-					ghost = Game.createRoom ((int)anchor.x, (int)anchor.y, xSize, -ySize, ID.DRYWALL);
+						//Create a room
+						ghost = Game.createRoom ((int)anchor.x, (int)anchor.y, xSize, -ySize, ID.BRICK);
+					}
+					break;
+				case 1:
+					Game.
+					break;
 				}
 			}
 		} else {

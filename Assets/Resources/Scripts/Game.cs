@@ -20,9 +20,9 @@ public class Game : MonoBehaviour {
 				levelArray [i, j] = ID.EMPTY;
 
 		//create ("Wall_Vertical", 3, 3);
-		createRoom(2, 2, 6, 4, ID.DRYWALL);
-		createRoom(9, 4, 3, 3, ID.BRICK);
-		createRoom (4, 9, 6, 8, ID.WOOD);
+		//createRoom(2, 2, 6, 4, ID.DRYWALL);
+		//createRoom(9, 4, 3, 3, ID.BRICK);
+		//createRoom (4, 9, 6, 8, ID.WOOD);
 		//createRoom(4, 4, 2, 2, ID.DRYWALL);
 
 		//createRoom (0, 0, 12, 10, ID.BRICK);
@@ -68,7 +68,9 @@ public class Game : MonoBehaviour {
 	}
 
 	public static ArrayList createRoom(int x, int y, int width, int height, int wallID) {
-		//Don't even try invalid input
+		Debug.Log ("Create room called. x=" + x + " y=" + y + " w=" + width + " h=" + height + " id=" + wallID);
+
+		//Don't try invalid input
 		if (x < 0 || y < 0 || (x + width >= size) || (y + height >= size) || wallID >= ID.walls.Length)
 			return new ArrayList();
 
@@ -137,13 +139,16 @@ public class Game : MonoBehaviour {
 		GameObject floor = create ("floor", x - 0.5f + (width / 2f), y - 0.5f + (height / 2f), 0.1f);
 		floor.transform.localScale = new Vector3 (width - 1, height - 1, 0.2f);
 
+		//rescale texture to make it look good
+		floor.GetComponent<Renderer> ().material.mainTextureScale = new Vector2((width - 1) / 3, (height - 1) / 3);
+
 		return floor;
 	}
 
 	/**
 	 * Creates a wall based on the surrounding walls.
 	 */
-	private static GameObject createWallAt(int x, int y) {
+	private static GameObject createWall(int x, int y) {
 		bool north = (y != size) && levelArray [x, y + 1] == ID.WALL;
 		bool south = (y != 0) && levelArray [x, y - 1] == ID.WALL;
 		bool east = (x != size) && levelArray[x + 1, y] == ID.WALL;
@@ -191,5 +196,10 @@ public class Game : MonoBehaviour {
 
 		//Else, nothing is connected, so return a pillar
 		return create("wall_center", x, y);
+	}
+
+	public static GameObject createWallWithUpdate(int x, int y) {
+		createWall (x, y);
+
 	}
 }
