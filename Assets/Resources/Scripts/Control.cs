@@ -72,12 +72,6 @@ public class Control : MonoBehaviour {
 				int xSize = (int)Mathf.Abs (anchor.x - clickedPoint.x);
 				int ySize = (int)Mathf.Abs (anchor.y - clickedPoint.y);
 
-				Debug.Log (xSize + "x" + ySize);
-
-				//If the size is unchanged, skip
-				if (xSize == lastXSize && ySize == lastYSize) {}
-					//goto EXIT_LMB;
-
 				if (lastXSize == -1)
 					lastXSize = xSize;
 				if (lastYSize == -1)
@@ -85,18 +79,24 @@ public class Control : MonoBehaviour {
 
 				switch (creationType) {
 				case 0:
-					if (xSize >= 2 && ySize >= 2) {
-						//Clearing code
-						foreach (GameObject g in ghost)
-							Game.destroy (g);
-						ghost.Clear ();
+					if (xSize != lastXSize || ySize != lastYSize) {
+						//Debug.Log ("Size updated. Selection size: " + xSize + "x" + ySize);
+						if (xSize >= 2 && ySize >= 2) {
+							lastXSize = xSize;
+							lastYSize = ySize;
 
-						//Create a room
-						ghost = Game.createRoom ((int)anchor.x, (int)anchor.y, xSize, -ySize, ID.BRICK);
+							//Clearing code
+							foreach (GameObject g in ghost)
+								Game.destroy (g);
+							ghost.Clear ();
+
+							//Create a room
+							ghost = Game.createRoom ((int)anchor.x, (int)anchor.y, xSize, -ySize, ID.BRICK);
+						}
 					}
 					break;
 				case 1:
-					Game.
+					//Game.
 					break;
 				}
 			}
@@ -107,8 +107,6 @@ public class Control : MonoBehaviour {
 			//	Game.destroy (g);
 			ghost.Clear ();
 		}
-
-		//EXIT_LMB:;
 
 		if (!Input.GetMouseButton (0) && !Input.GetMouseButton (1))
 			anchor = NO_POINT;
