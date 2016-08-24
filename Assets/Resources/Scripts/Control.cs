@@ -7,7 +7,7 @@ public class Control : MonoBehaviour {
 	private static Vector2 anchor;
 
 	//This is the equivalent of a null value for Vector2s
-	private static readonly Vector2 NO_POINT = new Vector2(0, 0);
+	private static readonly Vector2 NO_POINT = new Vector2(-9999, -9999);
 
 	private static readonly float PANNING_SCALE = 0.1f;
 	private static readonly float SCROLLING_SCALE = 1.2f;
@@ -27,8 +27,8 @@ public class Control : MonoBehaviour {
 		creationType = 0;
 
 		ghost = new List<GameObject>();
-		lastXSize = -1;
-		lastYSize = -1;
+		lastXSize = 0;
+		lastYSize = 0;
 	}
 	
 	// Update is called once per frame
@@ -64,22 +64,26 @@ public class Control : MonoBehaviour {
 			clickedPoint.y = Mathf.Round (clickedPoint.y);
 
 			//Set initial point, if needed. Round to nearest integer.
-			if (anchor == NO_POINT) 
+			if (anchor == NO_POINT) {
+				Debug.Log ("Anchor: " + clickedPoint);
 				anchor = clickedPoint;
-			else {
-				int xSize = (int)Mathf.Abs (anchor.x - clickedPoint.x);
-				int ySize = (int)Mathf.Abs (anchor.y - clickedPoint.y);
+			} else {
+				Debug.Log ("Clicked point: " + clickedPoint);
+				int xSize = (int)(clickedPoint.x - anchor.x);
+				int ySize = (int)(clickedPoint.y - anchor.y);
 
-				if (lastXSize == -1)
-					lastXSize = xSize;
-				if (lastYSize == -1)
-					lastYSize = ySize;
+				Debug.Log ("Selection size: " + xSize + "x" + ySize);
+
+				//if (lastXSize == 0)
+				//	lastXSize = xSize;
+				//if (lastYSize == 0)
+				//	lastYSize = ySize;
 
 				switch (creationType) {
 				case 0:
 					if (xSize != lastXSize || ySize != lastYSize) {
 						Debug.Log ("Size updated. Selection size: " + xSize + "x" + ySize);
-						if (xSize >= 2 && ySize >= 2) {
+						//if (xSize >= 2 && ySize >= 2) {
 							lastXSize = xSize;
 							lastYSize = ySize;
 
@@ -90,8 +94,8 @@ public class Control : MonoBehaviour {
 							ghost.Clear ();
 
 							//Create a room
-							ghost = Game.createRoomGhost ((int)anchor.x, (int)anchor.y, xSize, -ySize);
-						}
+							ghost = Game.createRoomGhost ((int)anchor.x, (int)anchor.y, xSize, ySize);
+						//}
 					}
 					break;
 				case 1:
@@ -103,13 +107,13 @@ public class Control : MonoBehaviour {
 			//Finalize the placement of the objects in the room, if any
 			if (ghost.Count > 0) {
 				//Remove all ghost objects
-				foreach (GameObject go in ghost) {
-					Game.destroy (go);
-				}
+				foreach (GameObject go in ghost)
+					if(go.tag == "Ghost")
+						Game.destroy (go);
 				ghost.Clear ();
 
 				//*Attempt* placement of the same objects
-				Game.createRoom ((int)anchor.x, (int)anchor.y, lastXSize, -lastYSize, ID.BRICK);
+				Game.createRoom ((int)anchor.x, (int)anchor.y, lastXSize, lastYSize, ID.BRICK);
 			}
 		}
 
@@ -117,10 +121,10 @@ public class Control : MonoBehaviour {
 			anchor = NO_POINT;
 
 		if (selection == null)
-			selection = Game.create ("selection", Mathf.Round (clickedPoint.x), Mathf.Round (clickedPoint.y));
+			selection = Game.create ("selection", Mathf.Round(clickedPoint.x), Mathf.Round(clickedPoint.y));
 		else {
 			Game.destroy (selection);
-			selection = Game.create ("selection", Mathf.Round (clickedPoint.x), Mathf.Round (clickedPoint.y));
+			selection = Game.create ("selection", Mathf.Round(clickedPoint.x), Mathf.Round(clickedPoint.y));
 		}
 
 		//Handle scrolling

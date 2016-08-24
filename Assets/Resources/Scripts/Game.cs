@@ -5,22 +5,11 @@ using System.Collections.Generic;
 public class Game : MonoBehaviour {
 	
 	//All of the objects in the world
-	//public static ArrayList objects;
 	private static Storage storage;
-
-	//public static int size;
-	//public static int[,] levelArray;
 
 	// Use this for initialization
 	void Start () {
-		//objects = new ArrayList ();
 		storage = new Storage();
-
-		//size = 100;
-		//levelArray = new int[size, size];
-		//for (int i = 0; i < size; i++)
-		//	for (int j = 0; j < size; j++)
-		//		levelArray [i, j] = ID.EMPTY;
 
 		//create ("Wall_Vertical", 3, 3);
 		//createRoom(2, 2, 6, 4, ID.DRYWALL);
@@ -33,9 +22,7 @@ public class Game : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {
-	
-	}
+	void Update () {}
 
 	public static GameObject create(string name) {
 		GameObject go = (GameObject)Instantiate (Resources.Load ("Prefabs/" + name));
@@ -60,82 +47,42 @@ public class Game : MonoBehaviour {
 	}
 
 	public static void destroy(GameObject go) {
-		//int x = (int)Mathf.Round (go.transform.position.x);
-		//int y = (int)Mathf.Round (go.transform.position.y);
-
 		storage.remove (go);
 		Destroy (go);
 
-		//if (x >= 0 && x < size && y >= 0 && y < size && levelArray[x, y] == ID.WALL)
-		//	levelArray [x, y] = ID.EMPTY;
+		//TO-DO: Update surrounding objects here
 	}
 
 	/**
 	 * Attempts to create a room with the given parameters.
 	 * Will overwrite any wall objects below it.
 	 */
-	public static List<GameObject> createRoom(int x, int y, int width, int height, int wallID) {
-		//Debug.Log ("Create room called. x=" + x + " y=" + y + " w=" + width + " h=" + height + " id=" + wallID);
-
-		//Don't try invalid input
-		//if (x < 0 || y < 0 || (x + width >= size) || (y + height >= size) || wallID >= ID.walls.Length)
-		//	return new ArrayList();
-
+	public static void createRoom(int x, int y, int width, int height, int wallID = ID.DRYWALL) {
+		Debug.Log ("Create room called. x=" + x + " y=" + y + " w=" + width + " h=" + height + " id=" + wallID);
 		if (wallID >= ID.walls.Length)
-			return new List<GameObject>();
+			return;// new List<GameObject>();
 
-		//Correct semi-valid inputs
-		if (width < 0) 
-			x -= (width = -width);
-
-		if (height < 0)
-			y -= (height = -height);
-
-		bool[,] prev = new bool[width, height];
-
-		//Check if proposed room overlaps anything
-		for (int i = 0; i < width; i++) {
-			for (int j = 0; j < height; j++) {
-				if (storage.containsGrid ("wall", x + i, y + j)) {
-					prev [i, j] = true;
-					/**
-					 * Add this to a list, and essentially split this process into
-					 * multiple more to avoid any conflicts! Recursion
-					 */
-				} else
-					prev [i, j] = false;
-			}
+		if (width < 0) {
+			width = -width;
+			x -= width;
 		}
 
-		List<GameObject> toReturn = new List<GameObject>();
+		if (height < 0) {
+			height = -height;
+			y -= height;
+		}
+
+		++width; ++height;
+
+		//List<GameObject> toReturn = new List<GameObject>();
 
 		Material mat = loadMaterial (ID.walls [wallID]);
 
 		for (int i = 0; i < width; i++) {//bottom
 			if (!storage.containsGrid ("wall", x + i, y)) {
-				//Create wall - make sure to update surrounding
-				//GameObject go = createWallWithUpdate (x + i, y, mat);
-
-
-				//Assign material
-				/*
-				if (go.GetComponent<Renderer> () != null)
-					go.GetComponent<Renderer> ().material = mat;
-				else
-					for (int k = 0; k < go.transform.childCount; k++) {
-						go.transform.GetChild (k).GetComponent<Renderer> ().material = mat;
-						go.transform.GetChild (k).GetComponent<Renderer> ().material.mainTextureScale = 
-							new Vector2 (1f, 0.2f);
-					}*/
-
-				//toReturn.Add(go);
-				//toReturn.AddRange(createWallWithUpdate(x + i, y, mat));
-
 				createWallWithUpdate (x + i, y, mat);
 			}
-			//levelArray [x + i, y] = ID.WALL;
 		}
-
 
 		for (int i = 0; i < width; i++) //top
 			if(!storage.containsGrid("wall", x + i, y + height - 1))
@@ -150,58 +97,36 @@ public class Game : MonoBehaviour {
 				createWallWithUpdate(x + width - 1, y + i, mat);
 
 
-		toReturn = storage.getBetweenGrid ("wall", x, y, x + width, y + height);
-
-		//Exclude previous items
-		//for (int i = 0; i < toReturn.Count; i++) {
-		//	int xVal = (int)toReturn [i].transform.position.x - x;
-		//	int yVal = (int)toReturn [i].transform.position.y - y;
-		//	if (prev [xVal, yVal])
-		//		toReturn.RemoveAt (i);
-		//}
-
+		//toReturn = storage.getBetweenGrid ("wall", x, y, x + width, y + height);
 
 		//Remove all elements that aren't "ghost" ones
 		//for (int i = 0; i < toReturn.Count; i++)
-		//	if (toReturn [i].tag != "Ghost")
+		//	if (toReturn [i].tag == "Ghost")
 		//		toReturn.RemoveAt (i);
 
-		//Actually create the wall GameObjects
-		/*
-		for (int i = 0; i < width; i++) {
-			for (int j = 0; j < height; j++) {
-				//if (levelArray [x + i, y + j] == ID.WALL) {
-				if(storage.containsGrid("wall", x + i, y + j)) {
-					GameObject go = createWall(x + i, y + j);
-					if (go.GetComponent<Renderer> () != null)
-						go.GetComponent<Renderer> ().material = mat;
-					else
-						for (int k = 0; k < go.transform.childCount; k++) {
-							go.transform.GetChild (k).GetComponent<Renderer> ().material = mat;
-							go.transform.GetChild (k).GetComponent<Renderer> ().material.mainTextureScale = 
-								new Vector2 (1f, 0.2f);
-						}
+		create ("light", x + (width / 2), y + (height / 2), -2);
+		generateFloor (x, y, width, height);
+		//toReturn.Add();
+		//toReturn.Add();
 
-					toReturn.Add(go);
-				}
-			}
-		}*/
-
-		toReturn.Add(create ("light", x + (width / 2), y + (height / 2), -2));
-		toReturn.Add(generateFloor (x, y, width, height));
-
-		return toReturn;
+		//return toReturn;
 	}
 
 	public static List<GameObject> createRoomGhost(int x, int y, int width, int height) {
 		List<GameObject> toReturn = new List<GameObject>();
 
-		//Correct semi-valid inputs
-		if (width < 0) 
-			x -= (width = -width);
+		if (width < 0) {
+			width = -width;
+			x -= width;
+		}
 
-		if (height < 0)
-			y -= (height = -height);
+		if (height < 0) {
+			height = -height;
+			y -= height;
+		}
+
+		//Width and height is expected to refer to the room size- walls add 1 to each dim
+		++width; ++height;
 		
 		GameObject temp;
 		for (int i = 0; i < width; i++) { //bottom
@@ -217,13 +142,13 @@ public class Game : MonoBehaviour {
 				temp.tag = "Ghost";
 			}
 
-		for (int i = 1; i < height; i++) //left
+		for (int i = 1; i < height - 1; i++) //left
 			if (!storage.containsGrid ("wall", x, y + i)) {
 				temp = createWallWithUpdate (x, y + i, null);
 				temp.tag = "Ghost";
 			}
 
-		for (int i = 1; i < height; i++) //right
+		for (int i = 1; i < height - 1; i++) //right
 			if (!storage.containsGrid ("wall", x + width - 1, y + i)) {
 				temp = createWallWithUpdate (x + width - 1, y + i, null);
 				temp.tag = "Ghost";
@@ -262,11 +187,6 @@ public class Game : MonoBehaviour {
 	 * Creates a wall based on the surrounding walls.
 	 */
 	private static GameObject createWall(int x, int y, Material mat) {
-		//bool north = (y != size) && levelArray [x, y + 1] == ID.WALL;
-		//bool south = (y != 0) && levelArray [x, y - 1] == ID.WALL;
-		//bool east = (x != size) && levelArray[x + 1, y] == ID.WALL;
-		//bool west = (x != 0) && levelArray[x - 1, y] == ID.WALL;
-
 		bool north = storage.containsGrid ("wall", x, y + 1);
 		bool south = storage.containsGrid ("wall", x, y - 1);
 		bool east = storage.containsGrid ("wall", x + 1, y);
@@ -329,9 +249,7 @@ public class Game : MonoBehaviour {
 	}
 
 	public static GameObject createWallWithUpdate(int x, int y, Material mat) {
-		//ArrayList toReturn = new ArrayList ();
 		GameObject wall = createWall (x, y, mat);
-		//toReturn.Add (wall);
 		for (int i = -1; i <= 1; i++) {
 			for (int j = -1; j <= 1; j++) {
 				if (i == 0 && j == 0)
@@ -344,11 +262,11 @@ public class Game : MonoBehaviour {
 	}
 
 	//returns: the update GO, or null if nothing to update
-	public static GameObject updateWall(int x, int y, Material mat) {
+	public static void updateWall(int x, int y, Material mat) {
 		if (storage.contains ("wall", x, y)) {
 			List<GameObject> list = storage.getAtGrid (x, y);
 
-			//For any walls found at a given position, delete them
+			//Delete all walls at a position. Keep metadata if possible.
 			string oldTag = "Untagged";
 			Material oldMat = null;
 			for (int i = 0; i < list.Count; i++) {
@@ -361,6 +279,8 @@ public class Game : MonoBehaviour {
 
 			//recreate
 			GameObject go = createWall (x, y, mat);
+
+			//reassign values
 			go.tag = oldTag;
 			for (int i = 0; i < go.transform.childCount; i++) {
 				go.transform.GetChild (i).GetComponent<Renderer> ().material = mat == null ? oldMat : mat;
@@ -368,7 +288,6 @@ public class Game : MonoBehaviour {
 				new Vector2 (1f, 0.2f);
 			}
 		}
-		return null;
 	}
 
 	/**
