@@ -9,7 +9,7 @@ public class CameraController : MonoBehaviour {
 	private static float height;
 
 	//Note that the camera is in negative z by default
-	private static readonly float MIN_HEIGHT = -2f;
+	private static readonly float MIN_HEIGHT = -2.5f;
 
 	// Use this for initialization
 	void Start () {
