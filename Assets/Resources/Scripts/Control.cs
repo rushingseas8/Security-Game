@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Control : MonoBehaviour {
 
@@ -11,16 +12,23 @@ public class Control : MonoBehaviour {
 	private static readonly float PANNING_SCALE = 0.1f;
 	private static readonly float SCROLLING_SCALE = 1.2f;
 
-	private static ArrayList ghost;
+	//What will we create when we left click?
+	public static int creationType;
+
+	private static List<GameObject> ghost;
 	private static int lastXSize, lastYSize;
+
+	private static GameObject selection;
 
 	// Use this for initialization
 	void Start () {
 		anchor = NO_POINT;
 
+		creationType = 0;
+
+		ghost = new List<GameObject>();
 		lastXSize = -1;
 		lastYSize = -1;
-		ghost = new ArrayList ();
 	}
 	
 	// Update is called once per frame
@@ -32,13 +40,12 @@ public class Control : MonoBehaviour {
 		CameraController.addX(xMovement);
 		CameraController.addY(yMovement);
 
+		Vector3 clickedPoint = Input.mousePosition;
+		clickedPoint.z = -CameraController.getHeight ();
+		clickedPoint = CameraController.getCamera ().ScreenToWorldPoint (clickedPoint);
+
 		//RMB also can pan around
 		if (Input.GetMouseButton (1)) {
-			//We need to calculate the distance from the camera to get world coords
-			Vector3 clickedPoint = Input.mousePosition;
-			clickedPoint.z = -CameraController.getHeight();
-			clickedPoint = CameraController.getCamera().ScreenToWorldPoint (clickedPoint);
-
 			//Set initial point, if needed
 			if (anchor == NO_POINT)
 				anchor = clickedPoint;
@@ -52,56 +59,69 @@ public class Control : MonoBehaviour {
 		}
 
 		if (Input.GetMouseButton (0)) {
-			Vector3 clickedPoint = Input.mousePosition;
-			clickedPoint.z = -CameraController.getHeight ();
-			clickedPoint = CameraController.getCamera ().ScreenToWorldPoint (clickedPoint);
-
 			//Round to nearest integer
 			clickedPoint.x = Mathf.Round (clickedPoint.x);
 			clickedPoint.y = Mathf.Round (clickedPoint.y);
 
 			//Set initial point, if needed. Round to nearest integer.
-			if (anchor == NO_POINT) {
-				Debug.Log ("Setting anchor");
+			if (anchor == NO_POINT) 
 				anchor = clickedPoint;
-			} else {
+			else {
 				int xSize = (int)Mathf.Abs (anchor.x - clickedPoint.x);
 				int ySize = (int)Mathf.Abs (anchor.y - clickedPoint.y);
-
-				Debug.Log (xSize + "x" + ySize);
-
-				if (xSize == lastXSize && ySize == lastYSize) {
-					//goto EXIT_LMB;
-				}
 
 				if (lastXSize == -1)
 					lastXSize = xSize;
 				if (lastYSize == -1)
 					lastYSize = ySize;
-				
-				if (xSize >= 2 && ySize >= 2) {
-					Debug.Log ("Creating a room!");
 
-					//clear
-					foreach (GameObject g in ghost)
-						Game.destroy (g);
-					ghost.Clear ();
+				switch (creationType) {
+				case 0:
+					if (xSize != lastXSize || ySize != lastYSize) {
+						Debug.Log ("Size updated. Selection size: " + xSize + "x" + ySize);
+						if (xSize >= 2 && ySize >= 2) {
+							lastXSize = xSize;
+							lastYSize = ySize;
 
-					ghost = Game.createRoom ((int)anchor.x, (int)anchor.y, xSize, -ySize, ID.DRYWALL);
+							//Clearing code
+							foreach (GameObject g in ghost)
+								if(g.tag == "Ghost")
+									Game.destroy (g);
+							ghost.Clear ();
+
+							//Create a room
+							ghost = Game.createRoomGhost ((int)anchor.x, (int)anchor.y, xSize, -ySize);
+						}
+					}
+					break;
+				case 1:
+					//Game.
+					break;
 				}
 			}
 		} else {
-			//anchor = NO_POINT;
+			//Finalize the placement of the objects in the room, if any
+			if (ghost.Count > 0) {
+				//Remove all ghost objects
+				foreach (GameObject go in ghost) {
+					Game.destroy (go);
+				}
+				ghost.Clear ();
 
-			//foreach (GameObject g in ghost)
-			//	Game.destroy (g);
-			ghost.Clear ();
+				//*Attempt* placement of the same objects
+				Game.createRoom ((int)anchor.x, (int)anchor.y, lastXSize, -lastYSize, ID.BRICK);
+			}
 		}
-
-		//EXIT_LMB:;
 
 		if (!Input.GetMouseButton (0) && !Input.GetMouseButton (1))
 			anchor = NO_POINT;
+
+		if (selection == null)
+			selection = Game.create ("selection", Mathf.Round (clickedPoint.x), Mathf.Round (clickedPoint.y));
+		else {
+			Game.destroy (selection);
+			selection = Game.create ("selection", Mathf.Round (clickedPoint.x), Mathf.Round (clickedPoint.y));
+		}
 
 		//Handle scrolling
 		CameraController.addHeight(SCROLLING_SCALE * Input.GetAxis ("Mouse ScrollWheel"));
