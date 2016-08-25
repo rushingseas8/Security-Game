@@ -40,6 +40,19 @@ public class CameraController : MonoBehaviour {
 			height = MIN_HEIGHT;
 	}
 
+	//Add rotation in degrees
+	public static void addTilt(float amt) {
+		mainCamera.transform.Rotate (new Vector3 (amt, 0, 0));	
+
+		//Because of the way that rotations are stored, we have to write this a bit strangely.
+		float angle = mainCamera.transform.eulerAngles.x;
+		if (angle > 30 && angle < 330)
+			mainCamera.transform.eulerAngles = new Vector3 (330, 0, 0);
+
+		if (angle > 359 || angle < 30)
+			mainCamera.transform.eulerAngles = new Vector3 (0, 0, 0);
+	}
+
 	public static float getX() {
 		return x;
 	}
