@@ -9,11 +9,19 @@ public class Control : MonoBehaviour {
 	//This is the equivalent of a null value for Vector2s
 	private static readonly Vector2 NO_POINT = new Vector2(-9999, -9999);
 
-	private static readonly float PANNING_SCALE = 0.1f;
-	private static readonly float SCROLLING_SCALE = 1.2f;
+	private const float PANNING_SCALE = 0.1f;
+	private const float SCROLLING_SCALE = 1.2f;
+	private const float ROTATION_SCALE = 3f;
 
 	//What will we create when we left click?
 	public static int creationType;
+
+	/*
+	 * True if we should have the selection cursor on the center of the tile-
+	 * this is actually 0.5 up and right of the whole number, but is useful for
+	 * placing down furniture and such.
+	 */
+	public static bool centerOnTile;
 
 	private static List<GameObject> ghost;
 	private static int lastXSize, lastYSize;
@@ -44,6 +52,14 @@ public class Control : MonoBehaviour {
 		clickedPoint.z = -CameraController.getHeight ();
 		clickedPoint = CameraController.getCamera ().ScreenToWorldPoint (clickedPoint);
 
+		//QE to rotate
+		if (Input.GetKey (KeyCode.Q)) {
+			CameraController.addTilt (ROTATION_SCALE);
+		}
+		if (Input.GetKey (KeyCode.E)) {
+			CameraController.addTilt (-ROTATION_SCALE);
+		}
+
 		//RMB also can pan around
 		if (Input.GetMouseButton (1)) {
 			//Set initial point, if needed
@@ -54,8 +70,6 @@ public class Control : MonoBehaviour {
 				CameraController.addX(anchor.x - clickedPoint.x);
 				CameraController.addY(anchor.y - clickedPoint.y);
 			}
-		} else {
-			//anchor = NO_POINT; //clear anchor
 		}
 
 		if (Input.GetMouseButton (0)) {
@@ -73,11 +87,6 @@ public class Control : MonoBehaviour {
 				int ySize = (int)(clickedPoint.y - anchor.y);
 
 				Debug.Log ("Selection size: " + xSize + "x" + ySize);
-
-				//if (lastXSize == 0)
-				//	lastXSize = xSize;
-				//if (lastYSize == 0)
-				//	lastYSize = ySize;
 
 				switch (creationType) {
 				case 0:
@@ -120,11 +129,17 @@ public class Control : MonoBehaviour {
 		if (!Input.GetMouseButton (0) && !Input.GetMouseButton (1))
 			anchor = NO_POINT;
 
-		if (selection == null)
-			selection = Game.create ("selection", Mathf.Round(clickedPoint.x), Mathf.Round(clickedPoint.y));
-		else {
+		//TEMP - test of furniture vs. room placement
+		float offset = 0;
+		if (Input.GetKey (KeyCode.LeftShift) || Input.GetKey (KeyCode.RightShift))
+		//if(centerOnTile)
+			offset = 0.5f;
+		
+		if (selection == null) {
+			selection = Game.create ("selection", Mathf.Round (clickedPoint.x) + offset, Mathf.Round (clickedPoint.y) + offset);
+		} else {
 			Game.destroy (selection);
-			selection = Game.create ("selection", Mathf.Round(clickedPoint.x), Mathf.Round(clickedPoint.y));
+			selection = Game.create ("selection", Mathf.Round(clickedPoint.x) + offset, Mathf.Round(clickedPoint.y) + offset);
 		}
 
 		//Handle scrolling
