@@ -15,24 +15,32 @@ public class Game : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {}
 
-	//Creates a new GameObject with default position and orientation
-	public static GameObject create(string name) {
-		GameObject go = (GameObject)Instantiate (Resources.Load ("Prefabs/" + name), new Vector3(0, 0, 0), Quaternion.identity);
-		storage.add (go);
-		return go;
-	}
-
-	//Creates a new GameObject with the given position
-	public static GameObject create(string name, float x, float y, float z = 0) {
-		GameObject go = (GameObject)Instantiate (Resources.Load ("Prefabs/" + name), new Vector3(x, y, z), Quaternion.identity);
-		storage.add (go);
-		return go;
-	}
-
 	//Creates a new GameObject with the given position and orientation
-	public static GameObject create(string name, float x, float y, float z, Vector3 rot) {
-		GameObject go = (GameObject)Instantiate (Resources.Load ("Prefabs/" + name), new Vector3(x, y, z), Quaternion.Euler(rot));
+	public static GameObject create(string name, float x = 0, float y = 0, float z = 0, float rot = 0) {
+		GameObject go = (GameObject)Instantiate (
+			Resources.Load ("Prefabs/" + name),
+			new Vector3(x, y, z),
+			Quaternion.Euler(new Vector3(0, 0, rot))
+		);
 		storage.add (go);
+		return go;
+	}
+		
+	public static GameObject createGhost(string name) {
+		GameObject go = create (name);
+		go.tag = "Ghost";
+		return go;
+	}
+
+	public static GameObject createGhost(string name, float x, float y, float z = 0) {
+		GameObject go = create (name, x, y, z);
+		go.tag = "Ghost";
+		return go;
+	}
+
+	public static GameObject createGhost(string name, float x, float y, float z = 0, float rot = 0) {
+		GameObject go = create (name, x, y, z, rot);
+		go.tag = "Ghost";
 		return go;
 	}
 
@@ -205,37 +213,37 @@ public class Game : MonoBehaviour {
 		if (north && south && !east && !west)
 			newWall = create ("wall_full", x, y);
 		else if (!north && !south && east && west)
-			newWall = create ("wall_full", x, y, 0, new Vector3(0, 0, 90));
+			newWall = create ("wall_full", x, y, 0, 90);
 
 		//Straight, half-length (for doors, windows)
 		else if (north && !south && !east && !west)
 			newWall = create ("wall_half", x, y);
 		else if (!north && south && !east && !west)
-			newWall = create ("wall_half", x, y, 0, new Vector3(0, 0, 180));
+			newWall = create ("wall_half", x, y, 0, 180);
 		else if (!north && !south && east && !west)
-			newWall = create ("wall_half", x, y, 0, new Vector3(0, 0, 270));
+			newWall = create ("wall_half", x, y, 0, 270);
 		else if (!north && !south && !east && west)
-			newWall = create ("wall_half", x, y, 0, new Vector3(0, 0, 90));
+			newWall = create ("wall_half", x, y, 0, 90);
 
 		//Corner
 		else if (north && !south && east && !west)
 			newWall = create ("wall_corner", x, y);
 		else if (north && !south && !east && west)
-			newWall = create ("wall_corner", x, y, 0, new Vector3(0, 0, 90));
+			newWall = create ("wall_corner", x, y, 0, 90);
 		else if (!north && south && east && !west)
-			newWall = create ("wall_corner", x, y, 0, new Vector3(0, 0, 270));
+			newWall = create ("wall_corner", x, y, 0, 270);
 		else if (!north && south && !east && west)
-			newWall = create ("wall_corner", x, y, 0, new Vector3(0, 0, 180));
+			newWall = create ("wall_corner", x, y, 0, 180);
 
 		//T shaped
 		else if (north && south && east && !west)
 			newWall = create ("wall_t", x, y);
 		else if (!north && south && east && west)
-			newWall = create ("wall_t", x, y, 0, new Vector3(0, 0, 270));
+			newWall = create ("wall_t", x, y, 0, 270);
 		else if (north && south && !east && west)
-			newWall = create ("wall_t", x, y, 0, new Vector3(0, 0, 180));
+			newWall = create ("wall_t", x, y, 0, 180);
 		else if (north && !south && east && west)
-			newWall = create ("wall_t", x, y, 0, new Vector3(0, 0, 90));
+			newWall = create ("wall_t", x, y, 0, 90);
 
 		//All 4 sides connected
 		else if (north && south && east && west)
