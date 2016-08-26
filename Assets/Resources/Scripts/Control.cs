@@ -108,7 +108,14 @@ public class Control : MonoBehaviour {
 					}
 					break;
 				case 1:
-					//Game.
+					break;
+				case 2:
+					break;
+				case 3: 
+					//ghost = new List<GameObject> ();
+					//GameObject furn = Game.create ("safe_basic_closed", (int)anchor.x, (int)anchor.y);
+					//furn.tag = "Ghost";
+					//ghost.Add (furn);
 					break;
 				}
 			}
@@ -122,7 +129,14 @@ public class Control : MonoBehaviour {
 				ghost.Clear ();
 
 				//*Attempt* placement of the same objects
-				Game.createRoom ((int)anchor.x, (int)anchor.y, lastXSize, lastYSize, ID.BRICK);
+				switch(creationType) {
+				case 0:
+					Game.createRoom ((int)anchor.x, (int)anchor.y, lastXSize, lastYSize, ID.BRICK);
+					break;
+				case 3:
+					//Game.create ("safe_basic_closed", (int)anchor.x, (int)anchor.y);
+					break;
+				}
 			}
 		}
 

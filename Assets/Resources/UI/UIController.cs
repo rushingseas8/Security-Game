@@ -17,6 +17,6 @@ public class UIController : MonoBehaviour {
 
 	public void buttonClicked(int value) {
 		Debug.Log ("Clicked button " + value);
-		buttonSelection = value;
+		Control.creationType = value;
 	}
 }
